@@ -14,6 +14,9 @@ import ProjectM36.Error
 import ProjectM36.RelationalExpression
 import ProjectM36.Key
 
+databaseExprsP :: Parser [DatabaseExpr]
+databaseExprsP = many1 databaseExprP <|> nothingsP
+
 --parsers which create "database expressions" which modify the database context (such as relvar assignment)
 databaseExprP :: Parser DatabaseExpr
 databaseExprP = choice $ map (\p -> p <* optional commentP) [insertP,
@@ -28,14 +31,16 @@ databaseExprP = choice $ map (\p -> p <* optional commentP) [insertP,
                                               addNotificationP,
                                               removeNotificationP,
                                               addTypeConstructorP,
-                                              removeTypeConstructorP,
-                                              nothingP]
+                                              removeTypeConstructorP]
             
 commentP :: Parser DatabaseExpr            
 commentP = reserved "--" >> manyTill anyChar eof >> pure NoOperation
             
 nothingP :: Parser DatabaseExpr            
 nothingP = whiteSpace >> pure NoOperation
+
+nothingsP :: Parser [DatabaseExpr]
+nothingsP = whiteSpace >> pure [NoOperation]
 
 assignP :: Parser DatabaseExpr
 assignP = do
